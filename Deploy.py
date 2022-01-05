@@ -12,6 +12,14 @@ from sklearn import linear_model
 import pickle 
 import streamlit as st
 
+import os
+
+try:
+    os.system('cmd /k "vncorenlp -Xmx2g VnCoreNLP-1.1.1.jar -p 9000 -a "wseg,pos,ner,parse""')
+    #os.system('cmd /k "vncorenlp -Xmx2g F:\ComputerScience\DataScience\Introduction\Project3\VnCoreNLP\VnCoreNLP-1.1.1.jar -p 9000 -a "wseg,pos,ner,parse""')
+except:
+    st.text('Cannot connect to VNCoreNLP server')
+
 vn_stopwords = []
 with open('data/vietnamese_stopwords.txt', encoding="utf8") as file:
     for line in file.read().splitlines():
