@@ -56,8 +56,8 @@ def tokennize_text(X_df):
     Tokenize the sentences into words
     return a numpy array of preprocessed text, each item in array is a paragraph after remove stopwords, special characters, ...
     '''
-    annotator = VnCoreNLP(address="http://127.0.0.1", port=9000)
-    # annotator = VnCoreNLP("VnCoreNLP/VnCoreNLP-1.1.1.jar")
+    # annotator = VnCoreNLP(address="http://127.0.0.1", port=9000)
+    annotator = VnCoreNLP("VnCoreNLP/VnCoreNLP-1.1.1.jar")
     with annotator:
         for index, filtered_text in enumerate(X_df):
             token_text = annotator.tokenize(filtered_text)[0]
