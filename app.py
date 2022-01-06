@@ -1,23 +1,9 @@
 import numpy as np
 import pandas as pd
 import re
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.tree import DecisionTreeClassifier
 from vncorenlp import VnCoreNLP
-from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import GradientBoostingClassifier
-from sklearn.neighbors import NearestCentroid
-from sklearn import linear_model
 import pickle 
 import streamlit as st
-#import os
-
-#try:
-#    #os.system('cmd /k "vncorenlp -Xmx2g VnCoreNLP-1.1.1.jar -p 9000 -a "wseg,pos,ner,parse""')
-#    os.system('cmd /k "vncorenlp -Xmx2g F:\ComputerScience\DataScience\Introduction\Project3\VnCoreNLP\VnCoreNLP-1.1.1.jar -p 9000 -a "wseg,pos,ner,parse""')
-#except:
-#    print('Cannot run cmd')
 
 vn_stopwords = []
 with open('data/vietnamese_stopwords.txt', encoding="utf8") as file:
@@ -56,7 +42,6 @@ def tokennize_text(X_df):
     Tokenize the sentences into words
     return a numpy array of preprocessed text, each item in array is a paragraph after remove stopwords, special characters, ...
     '''
-    # annotator = VnCoreNLP(address="http://127.0.0.1", port=9000)
     annotator = VnCoreNLP("VnCoreNLP-1.1.1.jar")
     with annotator:
         for index, filtered_text in enumerate(X_df):
@@ -64,19 +49,6 @@ def tokennize_text(X_df):
             X_df[index] = ' '.join(token_text)
     
     return X_df
-
-def create_DTM(X_df):
-    cv = CountVectorizer(analyzer='word')
-    data = cv.fit_transform(X_df).todense()
-    return data
-
-#def vectorize_tfidf(X_df):
-#    X = hash_data(X_df)
-#    return X.transform(X_df)
-
-def vectorize_tfidf(X_df):
-    vectorization = TfidfVectorizer()
-    return vectorization.fit_transform(X_df).todense()
 
 def prediction(model_name, news):
     test_dict = {"text": [news]}
