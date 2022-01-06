@@ -11,7 +11,7 @@ from sklearn.neighbors import NearestCentroid
 from sklearn import linear_model
 import pickle 
 import streamlit as st
-import os
+#import os
 
 #try:
 #    #os.system('cmd /k "vncorenlp -Xmx2g VnCoreNLP-1.1.1.jar -p 9000 -a "wseg,pos,ner,parse""')
@@ -24,11 +24,12 @@ with open('data/vietnamese_stopwords.txt', encoding="utf8") as file:
     for line in file.read().splitlines():
         vn_stopwords.append(line.strip())
 
-X_train_vect = pickle.load(open('data/X_train_vect.sav','rb'))
-y_train = pickle.load(open('data/y_train.sav','rb'))
-
-vectorization = TfidfVectorizer()
-X_train = vectorization.fit_transform(X_train_vect)
+LR = pickle.load(open('data/LogisticRegression.sav','rb'))
+DTC = pickle.load(open('data/DecisionTreeClassifier.sav','rb'))
+GBC = pickle.load(open('data/GradientBoostingClassifier.sav','rb'))
+REG = pickle.load(open('data/LinearRegression.sav','rb'))
+CLF = pickle.load(open('data/NearestCentroid.sav','rb'))
+vectorization = pickle.load(open('data/vectorization.sav','rb'))
 
 def preprocessing(X_df):
     for index, test_str in enumerate(X_df):
@@ -69,10 +70,6 @@ def create_DTM(X_df):
     data = cv.fit_transform(X_df).todense()
     return data
 
-def hash_data(X_df):
-    vectorization = TfidfVectorizer()
-    return vectorization.fit(X_df)
-
 #def vectorize_tfidf(X_df):
 #    X = hash_data(X_df)
 #    return X.transform(X_df)
@@ -81,12 +78,7 @@ def vectorize_tfidf(X_df):
     vectorization = TfidfVectorizer()
     return vectorization.fit_transform(X_df).todense()
 
-#hash_data_learn = hash_data(X_df)
-
-#xv_train = vectorize_tfidf(X_df)
-#X_train, X_test, y_train, y_test = train_test_split(xv_train, Y_target, test_size=0.2, random_state=0)
-
-def prediction(model, news):
+def prediction(model_name, news):
     test_dict = {"text": [news]}
     test_df = pd.DataFrame(test_dict)
 
@@ -95,33 +87,23 @@ def prediction(model, news):
     processed_text = tokennize_text(preprocessing(text))
     vector_text = vectorization.transform(processed_text)
 
-    if model == 'Logistic Regression':
-        LR = LogisticRegression()
-        LR.fit(X_train, y_train)
+    if model_name == 'Logistic Regression':
         return LR.predict(vector_text)
 
-    elif model == 'Decision Tree':
-        dtc = DecisionTreeClassifier(criterion='entropy')
-        dtc.fit(X_train, y_train)
-        return dtc.predict(vector_text)
+    elif model_name == 'Decision Tree':
+        return DTC.predict(vector_text)
 
-    elif model == 'Gradient Booting Classifier':
-        GBC = GradientBoostingClassifier(random_state=0)
-        GBC.fit(X_train, y_train)
+    elif model_name == 'Gradient Booting Classifier':
         return GBC.predict(vector_text)
 
-    elif model == 'Linear Regession':
-        REG = linear_model.LinearRegression()
-        REG.fit(X_train, y_train)
+    elif model_name == 'Linear Regession':
         y_pred = REG.predict(vector_text)
         y_pred[y_pred < 0.5] = 0
         y_pred[y_pred >= 0.5] = 1
         return y_pred
 
-    elif model == 'Nearest Centroid Classifier':
-        clf = NearestCentroid()
-        clf.fit(X_train, y_train)
-        return clf.predict(vector_text)
+    elif model_name == 'Nearest Centroid Classifier':
+        return CLF.predict(vector_text)
 
 authors='''
 19120525 - Lê Minh Hữu
@@ -146,7 +128,6 @@ def main():
             st.success("This is fake news.")
         else:
             st.success("This is not fake news.")
-
 
 if __name__ == '__main__':
     main()
