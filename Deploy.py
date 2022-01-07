@@ -11,25 +11,13 @@ from sklearn.neighbors import NearestCentroid
 from sklearn import linear_model
 import pickle 
 import streamlit as st
-#import os
 
-#try:
-#    #os.system('cmd /k "vncorenlp -Xmx2g VnCoreNLP-1.1.1.jar -p 9000 -a "wseg,pos,ner,parse""')
-#    os.system('cmd /k "vncorenlp -Xmx2g F:\ComputerScience\DataScience\Introduction\Project3\VnCoreNLP\VnCoreNLP-1.1.1.jar -p 9000 -a "wseg,pos,ner,parse""')
-#except:
-#    print('Cannot run cmd')
-
+vncorenlp_file = 'VnCoreNLP/VnCoreNLP-1.1.1.jar'
+vncorenlp_file_ = "F:/ComputerScience/DataScience/Introduction/Project3/VnCoreNLP/VnCoreNLP-1.1.1.jar"
 vn_stopwords = []
-with open('data/vietnamese_stopwords.txt', encoding="utf8") as file:
+with open('models/vietnamese_stopwords.txt', encoding="utf8") as file:
     for line in file.read().splitlines():
         vn_stopwords.append(line.strip())
-
-LR = pickle.load(open('data/LogisticRegression.sav','rb'))
-DTC = pickle.load(open('data/DecisionTreeClassifier.sav','rb'))
-GBC = pickle.load(open('data/GradientBoostingClassifier.sav','rb'))
-REG = pickle.load(open('data/LinearRegression.sav','rb'))
-CLF = pickle.load(open('data/NearestCentroid.sav','rb'))
-vectorization = pickle.load(open('data/vectorization.sav','rb'))
 
 def preprocessing(X_df):
     for index, test_str in enumerate(X_df):
@@ -56,8 +44,7 @@ def tokennize_text(X_df):
     Tokenize the sentences into words
     return a numpy array of preprocessed text, each item in array is a paragraph after remove stopwords, special characters, ...
     '''
-    annotator = VnCoreNLP(address="http://127.0.0.1", port=9000)
-    #annotator = VnCoreNLP("VnCoreNLP/VnCoreNLP-1.1.1.jar")
+    annotator = VnCoreNLP(vncorenlp_file_)
     with annotator:
         for index, filtered_text in enumerate(X_df):
             token_text = annotator.tokenize(filtered_text)[0]
@@ -65,18 +52,11 @@ def tokennize_text(X_df):
     
     return X_df
 
-def create_DTM(X_df):
-    cv = CountVectorizer(analyzer='word')
-    data = cv.fit_transform(X_df).todense()
-    return data
-
-#def vectorize_tfidf(X_df):
-#    X = hash_data(X_df)
-#    return X.transform(X_df)
-
-def vectorize_tfidf(X_df):
-    vectorization = TfidfVectorizer()
-    return vectorization.fit_transform(X_df).todense()
+vectorization = pickle.load(open("models/vectorization.sav", 'rb'))
+model_files = ['models/LogisReg_model.sav', 'models/DCT_model.sav', 'models/GBC_model.sav', 'models/LinearReg_model.sav', 'models/NCC_model.sav']
+models = []
+for file in model_files:
+    models.append(pickle.load(open(file, 'rb')))
 
 def prediction(model_name, news):
     test_dict = {"text": [news]}
@@ -88,22 +68,22 @@ def prediction(model_name, news):
     vector_text = vectorization.transform(processed_text)
 
     if model_name == 'Logistic Regression':
-        return LR.predict(vector_text)
+        return models[0].predict(vector_text)
 
     elif model_name == 'Decision Tree':
-        return DTC.predict(vector_text)
+        return models[1].predict(vector_text)
 
     elif model_name == 'Gradient Booting Classifier':
-        return GBC.predict(vector_text)
+        return models[2].predict(vector_text)
 
     elif model_name == 'Linear Regession':
-        y_pred = REG.predict(vector_text)
+        y_pred = models[3].predict(vector_text)
         y_pred[y_pred < 0.5] = 0
         y_pred[y_pred >= 0.5] = 1
         return y_pred
 
     elif model_name == 'Nearest Centroid Classifier':
-        return CLF.predict(vector_text)
+        return models[4].predict(vector_text)
 
 authors='''
 19120525 - Lê Minh Hữu
@@ -129,5 +109,15 @@ def main():
         else:
             st.success("This is not fake news.")
 
+def debug():
+    news = 'Tại buổi họp báo, ông Huỳnh Thuận, phó giám đốc Sở Y tế Quảng Nam, cho biết ngành y tế không mua kit test xét nghiệm Covid-19 của Công ty Việt Á. Trước năm 2021, có mượn máy xét nghiệm của công ty này để sử dụng và đến đầu năm 2021 đã trả lại. Phát biểu kết luận, Phó chủ tịch UBND tỉnh Quảng Nam Trần Văn Tân cho biết về việc tỉnh Quảng Nam mượn máy xét nghiệm của Công ty Việt Á thì tỉnh đã chủ động cung cấp thông tin cho báo chí.Theo ông Tân, năm 2021 tỉnh không mua kit test xét nghiệm Covid-19 của Công ty Việt Á mà chỉ mượn máy xét nghiệm xong rồi trả'
+    model='Decision Tree'
+    predict = prediction(model, news)
+    if predict[0] == 0:
+        print("This is fake news.")
+    else:
+        print("This is not fake news.")
+
 if __name__ == '__main__':
-    main()
+    #main()
+    debug()
