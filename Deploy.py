@@ -13,7 +13,7 @@ import pickle
 import streamlit as st
 
 vncorenlp_file = 'VnCoreNLP/VnCoreNLP-1.1.1.jar'
-vncorenlp_file_ = "F:/ComputerScience/DataScience/Introduction/Project3/VnCoreNLP/VnCoreNLP-1.1.1.jar"
+
 vn_stopwords = []
 with open('models/vietnamese_stopwords.txt', encoding="utf8") as file:
     for line in file.read().splitlines():
@@ -44,7 +44,7 @@ def tokennize_text(X_df):
     Tokenize the sentences into words
     return a numpy array of preprocessed text, each item in array is a paragraph after remove stopwords, special characters, ...
     '''
-    annotator = VnCoreNLP(vncorenlp_file_)
+    annotator = VnCoreNLP(vncorenlp_file)
     with annotator:
         for index, filtered_text in enumerate(X_df):
             token_text = annotator.tokenize(filtered_text)[0]
@@ -113,11 +113,11 @@ def debug():
     news = 'Tại buổi họp báo, ông Huỳnh Thuận, phó giám đốc Sở Y tế Quảng Nam, cho biết ngành y tế không mua kit test xét nghiệm Covid-19 của Công ty Việt Á. Trước năm 2021, có mượn máy xét nghiệm của công ty này để sử dụng và đến đầu năm 2021 đã trả lại. Phát biểu kết luận, Phó chủ tịch UBND tỉnh Quảng Nam Trần Văn Tân cho biết về việc tỉnh Quảng Nam mượn máy xét nghiệm của Công ty Việt Á thì tỉnh đã chủ động cung cấp thông tin cho báo chí.Theo ông Tân, năm 2021 tỉnh không mua kit test xét nghiệm Covid-19 của Công ty Việt Á mà chỉ mượn máy xét nghiệm xong rồi trả'
     model='Decision Tree'
     predict = prediction(model, news)
-    if predict[0] == 0:
+    if predict[0] == 1:
         print("This is fake news.")
     else:
         print("This is not fake news.")
 
 if __name__ == '__main__':
-    #main()
-    debug()
+    main()
+    #debug()
